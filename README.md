@@ -26,13 +26,16 @@ Before using the project, make sure you have:
    APP_USER_PASSWORD=your_app_password
    ```
 
+   These passwords are used when the database is created for the first time. Changing
+   `.env` later will not change passwords in an existing database volume.
+
 4. Start the database container:
 
    ```bash
    docker compose up -d
    ```
 
-5. Check that the container is running:
+5. Wait until the container shows as `healthy` (the first startup can take a few minutes):
 
    ```bash
    docker compose ps
@@ -46,13 +49,19 @@ Before using the project, make sure you have:
 
 ## Database details
 
-The project creates an Oracle Free instance with:
+The project creates an Oracle Free instance. In your database client, create an
+Oracle connection with:
 
 - host: localhost
 - port: 1521
+- service name: FREEPDB1
 - username: student
 - password: value from `APP_USER_PASSWORD`
-- system/admin password: value from `ORACLE_PASSWORD`
+
+For an administrator connection, use username `system` and the value of
+`ORACLE_PASSWORD` as the password. Use the same host, port, and service name.
+
+Once connected, you can check the connection with `SELECT 1 FROM dual;`.
 
 ## Useful commands
 
@@ -68,7 +77,8 @@ Restart the service:
 docker compose restart oracle
 ```
 
-Remove the database volume (this deletes stored data):
+Start over with a new database and the current `.env` passwords (this deletes
+all stored data):
 
 ```bash
 docker compose down -v
