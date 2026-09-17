@@ -1,20 +1,33 @@
 services:
-  oracle:
-    image: gvenzl/oracle-free:latest
-    container_name: university-oracle
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+    # Нужно для Mac с Apple Silicon, включая M3.
+    platform: linux/amd64
+
+    container_name: university-sqlserver
+
     ports:
-      - "1521:1521"
+      - "1433:1433"
+
     environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-      APP_USER: student
-      APP_USER_PASSWORD: ${APP_USER_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: "Developer"
+
     volumes:
-      - oracle-data:/opt/oracle/oradata
+      - sqlserver-data:/var/opt/mssql
+
     healthcheck:
-      test: ["CMD", "healthcheck.sh"]
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"
+        ]
       interval: 10s
       timeout: 5s
-      retries: 15
+      retries: 30
+      start_period: 30s
 
 volumes:
-  oracle-data:
+  sqlserver-data:
