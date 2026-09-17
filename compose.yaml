@@ -1,33 +1,15 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-
-    # Нужно для Mac с Apple Silicon, включая M3.
-    platform: linux/amd64
-
-    container_name: university-sqlserver
-
+  postgres:
+    image: postgres:18
+    container_name: postgres
     ports:
-      - "1433:1433"
-
+      - "5432:5432"
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
-      MSSQL_PID: "Developer"
-
+      POSTGRES_DB: university
+      POSTGRES_USER: student
+      POSTGRES_PASSWORD: password
     volumes:
-      - sqlserver-data:/var/opt/mssql
-
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 30s
+      - postgres_data:/var/lib/postgresql
 
 volumes:
-  sqlserver-data:
+  postgres_data:
