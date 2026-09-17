@@ -1,15 +1,20 @@
 services:
   postgres:
     image: postgres:18
-    container_name: postgres
+    container_name: university-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: university
       POSTGRES_USER: student
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: university
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U student -d university"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
 
 volumes:
-  postgres_data:
+  postgres-data:
