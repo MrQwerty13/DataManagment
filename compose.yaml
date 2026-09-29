@@ -1,22 +1,36 @@
 services:
-  postgres:
-    image: postgres:18
-    container_name: university-postgres
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+    # The official image is amd64-only: Rosetta on Apple Silicon,
+    # QEMU binfmt emulation on the Raspberry Pi.
+    platform: linux/amd64
+
+    container_name: university-sqlserver
     restart: unless-stopped
+
     ports:
-      - "5432:5432"
+      - "1433:1433"
+
     environment:
-      POSTGRES_USER: student
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: university
-      PGDATA: /var/lib/postgresql/18/docker
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in .env}
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
+
     volumes:
-      - postgres-data:/var/lib/postgresql
+      - sqlserver-data:/var/opt/mssql
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U student -d university"]
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"
+        ]
       interval: 10s
       timeout: 5s
-      retries: 15
+      retries: 60
+      start_period: 60s
 
 volumes:
-  postgres-data:
+  sqlserver-data:
